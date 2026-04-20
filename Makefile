@@ -120,7 +120,7 @@ $(TOOLS_DIRECTORY)/theta:
 $(TOOLS_DIRECTORY)/spacer: $(TOOLS_DIRECTORY)/z3
 	mkdir -p $(TOOLS_DIRECTORY)
 	rm -rf $@
-	ln -s $(TOOLS_DIRECTORY)/z3/bin $(TOOLS_DIRECTORY)/spacer
+	ln -sf ./z3/bin $(TOOLS_DIRECTORY)/spacer
 
 ### TODO: add new verifiers here.
 

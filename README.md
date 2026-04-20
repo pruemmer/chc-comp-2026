@@ -19,7 +19,7 @@ To add a new verifier, do the following three things:
 
 1. **Add a download step in the [Makefile](./Makefile).** Under the `Download Tools` section, add a
    Make target that downloads and unpacks the tool into `tools/TOOL`. Then add
-   `$(TOOLS_DIRECTORY)/TOOL` to the `download-tools` prerequisite list.
+   `$(TOOLS_DIRECTORY)/TOOL` to the `download-tools` prerequisite list. See the existing tools for some examples (e.g., $(TOOLS_DIRECTORY)/theta for a Zenodo-hosted tool).
 
 > [!CAUTION]
 > All submitted tools must be publicly available and include a LICENSE file that permits unrestricted evaluation by any party. The license must not impose any limitations on the use, distribution, or analysis of the tool’s outputs, including but not limited to log files, generated models, or intermediate results. The tool archive should be ideally hosted on a long-term archival site such as Zenodo, but this is not a requirement.
