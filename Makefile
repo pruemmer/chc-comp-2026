@@ -62,13 +62,15 @@ package: download-all
 
 # Add targets here to download tools during CI runs or for local setup. 
 # Each tool should be placed in a subdirectory of $(TOOLS_DIRECTORY) with the same name
-# as the tool (e.g., tools/eldarica).	
-download-tools: \ 
-	\ # verifiers
+# as the tool (e.g., tools/spacer).	
+download-tools: download-verifiers download-validators 
+
+download-verifiers: \
 	$(TOOLS_DIRECTORY)/golem \
 	$(TOOLS_DIRECTORY)/princess \
 	$(TOOLS_DIRECTORY)/spacer \
-	\ # validators
+
+download-validators: \
 	$(TOOLS_DIRECTORY)/z3 \
 	$(TOOLS_DIRECTORY)/cvc5 \
 	$(TOOLS_DIRECTORY)/theta
@@ -119,6 +121,8 @@ $(TOOLS_DIRECTORY)/spacer: $(TOOLS_DIRECTORY)/z3
 	mkdir -p $(TOOLS_DIRECTORY)
 	rm -rf $@
 	ln -s $(TOOLS_DIRECTORY)/z3/bin $(TOOLS_DIRECTORY)/spacer
+
+### TODO: add new verifiers here.
 
 ### Below are the validators.
 
