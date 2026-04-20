@@ -1,7 +1,7 @@
 name: Audit Templates
 
 on:
-  pull_request:
+  pull_request_target:
 
 permissions:
   contents: read
@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
@@ -32,7 +34,7 @@ jobs:
             echo 'output<<EOF'
             make debug-templates
             echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          } | tee -a "$GITHUB_OUTPUT"
 
       - name: Download tools
         id: download
@@ -48,23 +50,32 @@ jobs:
             echo "Contents of tools/:"
             find tools -maxdepth 2 -type f | sort
             echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Build comment body
+        env:
+          DISCOVERY: ${{ steps.discovery.outputs.output }}
+          TEMPLATES: ${{ steps.templates.outputs.output }}
+          DOWNLOADS: ${{ steps.download.outputs.output }}
+        run: |
+          {
+            echo "## Discovery"
+            echo ""
+            echo '```'
+            echo "$DISCOVERY"
+            echo '```'
+            echo ""
+            echo "$TEMPLATES"
+            echo ""
+            echo "## Tool Downloads"
+            echo ""
+            echo '```'
+            echo "$DOWNLOADS"
+            echo '```'
+          } > comment.md
 
       - name: Comment on PR
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Discovery
-
-            ```
-            ${{ steps.discovery.outputs.output }}
-            ```
-
-            ${{ steps.templates.outputs.output }}
-
-            ## Tool Downloads
-
-            ```
-            ${{ steps.download.outputs.output }}
-            ```
+          body-path: comment.md

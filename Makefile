@@ -53,7 +53,7 @@ debug-discovery:
 	@echo "VALIDATE_TARGETS:       $(VALIDATE_TARGETS)"
 
 # Audit benchmark-defs templates: DTD validation, model verdicts, participation table
-debug-templates:
+debug-templates: benchexec
 	@python3 ./audit_templates.py benchmark-defs
 
 ############# Packaging the artifact
@@ -111,8 +111,8 @@ $(TOOLS_DIRECTORY)/golem:
 $(TOOLS_DIRECTORY)/theta:
 	mkdir -p $(TOOLS_DIRECTORY)
 	rm -rf $@
-	wget 'https://zenodo.org/records/15911452/files/ThetaCHC.zip' -O $(TOOLS_DIRECTORY)/theta.zip
-	cd $(TOOLS_DIRECTORY) && unzip theta.zip && mv ThetaCHC theta
+	wget 'https://zenodo.org/records/19607082/files/Theta-chccomp.zip' -O $(TOOLS_DIRECTORY)/theta.zip
+	cd $(TOOLS_DIRECTORY) && unzip theta.zip && mv Theta-chccomp theta
 	rm $(TOOLS_DIRECTORY)/theta.zip
 
 $(TOOLS_DIRECTORY)/princess:
