@@ -30,6 +30,7 @@ jobs:
       - name: Run debug-templates
         id: templates
         run: |
+          make benchexec
           {
             echo 'output<<EOF'
             make debug-templates
@@ -39,15 +40,14 @@ jobs:
       - name: Download tools
         id: download
         run: |
-          if make download-tools 2>&1; then
+          if make download-tools -j4 2>&1; then
             echo "All tools downloaded successfully."
           else
             echo "ERROR: Some tools failed to download."
           fi
           {
             echo 'output<<EOF'
-            echo "Contents of tools/:"
-            find tools -maxdepth 2 -type f | sort
+            tree tools -L2
             echo 'EOF'
           } | tee -a "$GITHUB_OUTPUT"
 

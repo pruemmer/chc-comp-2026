@@ -151,31 +151,44 @@ def build_participation_table(template_dir):
 
     cats = sorted(all_categories)
 
-    # Build markdown table
-    lines = []
-    header = '| Template | Tool | Track | ' + ' | '.join(cats) + ' |'
-    sep = '|' + '|'.join(['---'] * (3 + len(cats))) + '|'
-    lines.append(header)
-    lines.append(sep)
+    # Group entries by track
+    groups = {'solver': [], 'model': [], 'validator': []}
+    for entry in entries:
+        groups[entry[2]].append(entry)
 
-    for stem, tool_label, track, categories in entries:
-        row = [f'`{stem}`', tool_label, track]
-        for cat in cats:
-            if cat in categories:
-                opts = categories[cat]
-                if opts:
-                    # Filter out model-dir placeholders for readability
-                    display_opts = [o for o in opts
-                                    if '||MODELS-DIR||' not in o]
-                    cell = ' '.join(f'`{o}`' for o in display_opts) if display_opts else '✓'
+    def _build_table(title, group_entries):
+        lines = []
+        lines.append(f'### {title}\n')
+        header = '| Name | ' + ' | '.join(cats) + ' |'
+        sep = '|' + '|'.join(['---'] * (1 + len(cats))) + '|'
+        lines.append(header)
+        lines.append(sep)
+        for stem, tool_label, track, categories in group_entries:
+            row = [tool_label]
+            for cat in cats:
+                if cat in categories:
+                    opts = categories[cat]
+                    if opts:
+                        display_opts = [o for o in opts
+                                        if '||MODELS-DIR||' not in o]
+                        cell = ' '.join(f'`{o}`' for o in display_opts) if display_opts else '✓'
+                    else:
+                        cell = '✓'
                 else:
-                    cell = '✓'
-            else:
-                cell = ''
-            row.append(cell)
-        lines.append('| ' + ' | '.join(row) + ' |')
+                    cell = ''
+                row.append(cell)
+            lines.append('| ' + ' | '.join(row) + ' |')
+        return '\n'.join(lines)
 
-    return '\n'.join(lines)
+    sections = []
+    if groups['solver']:
+        sections.append(_build_table('Solvers', groups['solver']))
+    if groups['model']:
+        sections.append(_build_table('Model Verifiers', groups['model']))
+    if groups['validator']:
+        sections.append(_build_table('Validators', groups['validator']))
+
+    return '\n\n'.join(sections)
 
 
 DEFAULT_DTD = os.path.join('benchexec', 'doc', 'benchmark.dtd')
