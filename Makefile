@@ -60,10 +60,12 @@ debug-templates: benchexec
 
 package: download-all
 
+# Add targets here to download tools during CI runs or for local setup. 
+# Each tool should be placed in a subdirectory of $(TOOLS_DIRECTORY) with the same name
+# as the tool (e.g., tools/eldarica).	
 download-tools: \
 	$(TOOLS_DIRECTORY)/eldarica \
 	$(TOOLS_DIRECTORY)/golem \
-	$(TOOLS_DIRECTORY)/validator \
 	$(TOOLS_DIRECTORY)/princess \
 	$(TOOLS_DIRECTORY)/z3 \
 	$(TOOLS_DIRECTORY)/cvc5 \
@@ -75,7 +77,7 @@ download-all: benchexec chc-comp25-benchmarks-full chc-comp25-benchmarks-test do
 
 ######################## Targets
 
-benchexec: $(TOOLS_DIRECTORY)/validator
+benchexec:
 	git clone https://github.com/sosy-lab/benchexec
 	cd benchexec/benchexec/tools/ && \
 	for i in ../../../tooldefs/*.py; do \
@@ -93,6 +95,9 @@ chc-comp25-benchmarks-full:
 chc-comp25-benchmarks-test: chc-comp25-benchmarks-full
 	cp -r chc-comp25-benchmarks-full chc-comp25-benchmarks-test
 	@for i in chc-comp25-benchmarks-test/*.set; do echo $$i; lines=$$(head -n5 "$$i"); rm $$i; for line in $${lines}; do echo $${line} >> $$i; done; done
+
+### Tools: each tool is downloaded, extracted, and placed in a subdirectory of $(TOOLS_DIRECTORY) with
+### the same name as the tool (e.g., tools/eldarica).
 
 $(TOOLS_DIRECTORY)/eldarica:
 	mkdir -p $(TOOLS_DIRECTORY)
@@ -114,6 +119,8 @@ $(TOOLS_DIRECTORY)/theta:
 	wget 'https://zenodo.org/records/19607082/files/Theta-chccomp.zip' -O $(TOOLS_DIRECTORY)/theta.zip
 	cd $(TOOLS_DIRECTORY) && unzip theta.zip && mv Theta-chccomp theta
 	rm $(TOOLS_DIRECTORY)/theta.zip
+
+### Below are the validators.
 
 $(TOOLS_DIRECTORY)/princess:
 	mkdir -p $(TOOLS_DIRECTORY)
