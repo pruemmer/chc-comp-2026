@@ -31,7 +31,7 @@ from collections import defaultdict
 # Pattern matching plain solver result files (not model-gen, validator, or fixed)
 _PLAIN_RESULT_RE = re.compile(
     r'^([a-z0-9]+)\.\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}'
-    r'\.results\.CHC-COMP2025_check-sat(?:\.([^.]+))?\.xml$'
+    r'\.results\.CHC-COMP2026_check-sat(?:\.([^.]+))?\.xml$'
 )
 
 
