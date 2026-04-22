@@ -13,13 +13,6 @@ class Tool(benchexec.tools.chc.ChcTool):
     Tool info for Eldarica.
     """
 
-    REQUIRED_PATHS = [
-        "eld",
-        "eldEnv",
-        "bin",
-        "target",
-    ]
-
     def executable(self, tool_locator):
         return tool_locator.find_executable("eld")
 

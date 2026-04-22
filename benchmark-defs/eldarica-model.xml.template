@@ -18,11 +18,6 @@
     <propertyfile expectedverdict="true">../chc-comp26-benchmarks/properties/check-sat.prp</propertyfile>
   </tasks>
 
-  <tasks name="LRA-Lin">
-    <includesfile>../chc-comp26-benchmarks/LRA-Lin.set</includesfile>
-    <propertyfile expectedverdict="true">../chc-comp26-benchmarks/properties/check-sat.prp</propertyfile>
-  </tasks>
-  
   <tasks name="LIA-Lin">
     <includesfile>../chc-comp26-benchmarks/LIA-Lin.set</includesfile>
     <propertyfile expectedverdict="true">../chc-comp26-benchmarks/properties/check-sat.prp</propertyfile>
