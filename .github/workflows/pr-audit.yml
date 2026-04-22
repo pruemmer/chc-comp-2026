@@ -15,17 +15,23 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
       - name: Install xmllint
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
 
-      - name: Run debug-discovery
-        id: discovery
+      - name: Download tools
         run: |
-          {
-            echo 'output<<EOF'
-            make debug-discovery
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          tree tools -L 2
+          if make download-tools -j4 2>&1; then
+            echo "All tools downloaded successfully."
+          else
+            echo "ERROR: Some tools failed to download."
+          fi
 
       - name: Run debug-templates
         id: templates
@@ -37,39 +43,15 @@ jobs:
             echo 'EOF'
           } | tee -a "$GITHUB_OUTPUT"
 
-      - name: Download tools
-        id: download
-        run: |
-          tree tools -L 2
-          if make download-tools -j4 2>&1; then
-            echo "All tools downloaded successfully."
-          else
-            echo "ERROR: Some tools failed to download."
-          fi
-          {
-            echo 'output<<EOF'
-            tree tools -L 2
-            echo 'EOF'
-          } | tee -a "$GITHUB_OUTPUT"
-
-      - name: Check verifier/validator versions
-        id: versions
-        run: |
-          make audit-tool-versions
-          {
-            echo 'table<<EOF'
-            cat version-table.md
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
       - name: Build comment body
         env:
-          VERSION_TABLE: ${{ steps.versions.outputs.table }}
+          TEMPLATES: ${{ steps.templates.outputs.output }}
         run: |
           {
-            echo "## Discovered Verifiers"
+            echo "## Discovery"
             echo ""
-            echo "$VERSION_TABLE"
+            echo "$TEMPLATES"
+            echo ""
           } > comment.md
 
       - name: Comment on PR

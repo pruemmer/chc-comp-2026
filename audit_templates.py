@@ -11,6 +11,7 @@ Exit code 0 if all checks pass, 1 otherwise.
 """
 
 import glob
+import html
 import os
 import subprocess
 import sys
@@ -90,7 +91,7 @@ def build_participation_table(template_dir):
     templates = sorted(glob.glob(
         os.path.join(template_dir, '*.xml.template')))
 
-    # Collect data: {(tool, track): {category: options_list}}
+    # Collect data per template row.
     entries = []
     all_categories = set()
 
@@ -111,6 +112,10 @@ def build_participation_table(template_dir):
 
         tool_attr = root.get('tool', stem)
         display = root.get('displayName', '')
+        if track == 'validator':
+            version_cell = '-'
+        else:
+            version_cell = get_tool_version_cell(tool_attr, display)
 
         # Global options (direct children of <benchmark> or <rundefinition>)
         global_opts = []
@@ -147,7 +152,7 @@ def build_participation_table(template_dir):
             categories[cat] = task_opts
 
         tool_label = display if display else tool_attr
-        entries.append((stem, tool_label, track, categories))
+        entries.append((stem, tool_label, track, version_cell, categories))
 
     cats = sorted(all_categories)
 
@@ -159,12 +164,12 @@ def build_participation_table(template_dir):
     def _build_table(title, group_entries):
         lines = []
         lines.append(f'### {title}\n')
-        header = '| Name | ' + ' | '.join(cats) + ' |'
-        sep = '|' + '|'.join(['---'] * (1 + len(cats))) + '|'
+        header = '| Name | Version | ' + ' | '.join(cats) + ' |'
+        sep = '|' + '|'.join(['---'] * (2 + len(cats))) + '|'
         lines.append(header)
         lines.append(sep)
-        for stem, tool_label, track, categories in group_entries:
-            row = [tool_label]
+        for stem, tool_label, track, version_cell, categories in group_entries:
+            row = [tool_label, version_cell]
             for cat in cats:
                 if cat in categories:
                     opts = categories[cat]
@@ -189,6 +194,75 @@ def build_participation_table(template_dir):
         sections.append(_build_table('Validators', groups['validator']))
 
     return '\n\n'.join(sections)
+
+
+def _tool_module_for(template_tool):
+    if template_tool == 'chc-model-validate':
+        return 'tooldefs.chc-model-validate'
+    return f'tooldefs.{template_tool}'
+
+
+def _tool_directory_for(template_tool, display_name):
+    tools_dir = os.path.join(os.getcwd(), 'tools')
+    if template_tool == 'chc-model-validate':
+        # Validation templates use displayName (z3/cvc5/princess) for the
+        # concrete backend directory containing validate.sh.
+        backend = (display_name or '').strip()
+        if not backend:
+            return None
+        return os.path.join(tools_dir, backend)
+    return os.path.join(tools_dir, template_tool)
+
+
+def _format_version_fallback(output):
+    cleaned = output.strip()
+    if not cleaned:
+        cleaned = 'tool check produced no output'
+    summary = html.escape(cleaned.replace('\n', ' '))
+    return f'<details><summary>{summary}</summary></details>'
+
+
+def get_tool_version_cell(template_tool, display_name):
+    """Get a version string for a template tool, or a summary fallback."""
+    module = _tool_module_for(template_tool)
+    tool_dir = _tool_directory_for(template_tool, display_name)
+    if not tool_dir:
+        return '<details><summary>ERROR: no tool directory mapping</summary></details>'
+
+    env = os.environ.copy()
+    env['PYTHONPATH'] = os.pathsep.join(
+        [
+            os.path.join(os.getcwd(), 'benchexec'),
+            os.getcwd(),
+        ]
+    )
+
+    cmd = [
+        sys.executable,
+        '-m',
+        'benchexec.test_tool_info',
+        module,
+        '--tool-directory',
+        tool_dir,
+        '--no-container',
+    ]
+
+    result = subprocess.run(
+        cmd,
+        cwd='/tmp',
+        env=env,
+        capture_output=True,
+        text=True,
+    )
+
+    output = (result.stdout or '') + (result.stderr or '')
+    for line in output.splitlines():
+        stripped = line.strip()
+        if stripped.startswith('Version:'):
+            version = stripped.split('Version:', 1)[1].strip()
+            return version.strip('"“”')
+
+    return _format_version_fallback(output)
 
 
 DEFAULT_DTD = os.path.join('benchexec', 'doc', 'benchmark.dtd')
