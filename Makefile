@@ -56,6 +56,32 @@ debug-discovery:
 debug-templates: benchexec
 	@python3 ./audit_templates.py benchmark-defs
 
+# Generate a compact markdown table with discovered verifiers and their
+# BenchExec tool-info versions. This runs checks from /tmp with an explicit
+# --tool-directory to ensure tools work outside their folder.
+audit-tool-versions: benchexec
+	@REPO=$$(pwd); \
+	OUT="$$REPO/version-table.md"; \
+	TMP_TABLE="$$(mktemp)"; \
+	echo "| Variant | Template | Tool | Version |" > "$$TMP_TABLE"; \
+	echo "|---|---|---|---|" >> "$$TMP_TABLE"; \
+	for f in "$${REPO}"/benchmark-defs/*.xml.template; do \
+		template=$$(basename "$$f"); \
+		case "$$template" in \
+			*-validation.xml.template) continue ;; \
+		esac; \
+		tool=$$(grep -o 'tool="[^"]*"' "$$f" | head -n1 | cut -d'"' -f2); \
+		case "$$template" in \
+			*-model.xml.template) variant="model" ;; \
+			*) variant="plain" ;; \
+		esac; \
+		version=$$(cd /tmp && PYTHONPATH="$$REPO/benchexec:$$REPO" python3 -m benchexec.test_tool_info "tooldefs.$$tool" --tool-directory "$$REPO/tools/$$tool" --no-container 2>&1 | grep '^Version:' | head -n1 | sed 's/^Version:[[:space:]]*//' | tr -d '"“”'); \
+		echo "| $$variant | $$template | $$tool | $$version |" >> "$$TMP_TABLE"; \
+	done; \
+	cat "$$TMP_TABLE" > "$$OUT"; \
+	rm -f "$$TMP_TABLE"; \
+	cat "$$OUT"
+
 ############# Packaging the artifact
 
 package: download-all

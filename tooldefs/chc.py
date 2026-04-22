@@ -33,3 +33,7 @@ class ChcTool(benchexec.tools.template.BaseTool2):
             status = result.RESULT_UNKNOWN
 
         return status
+
+
+    def version(self, executable):
+        return self._version_from_tool(executable)
