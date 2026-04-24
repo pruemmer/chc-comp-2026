@@ -17,7 +17,7 @@ Verifiers, model-producing verifiers, and validators are **auto-discovered** fro
 
 To add a new verifier, do the following three things:
 
-1. **Add a download step in the [Makefile](./Makefile).** Under the `Download Tools` section, add a
+1. **Add a download step in the [Makefile](https://github.com/chc-comp/chc-comp-2026/blob/55597fbb37c7ae4e57b2339bbe816f2eb6b01ed3/Makefile#L125)** Under the `Download Tools` section, add a
    Make target that downloads and unpacks the tool into `tools/TOOL`. Then add
    `$(TOOLS_DIRECTORY)/TOOL` to the `download-tools` prerequisite list. See the existing tools for some examples (e.g., $(TOOLS_DIRECTORY)/theta for a Zenodo-hosted tool).
 
